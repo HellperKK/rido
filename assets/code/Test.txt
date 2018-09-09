@@ -1,6 +1,8 @@
 FUNCTION INIT() DO
 	X=0
-	Y=0
+	Y=12
+	X+=Y
+	X+=13
 	CALL()
 	Z=CALL()
 	RETURN 0
