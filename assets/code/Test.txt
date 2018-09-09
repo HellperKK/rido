@@ -1,0 +1,7 @@
+FUNCTION INIT() DO
+	X=0
+	Y=0
+	CALL()
+	Z=CALL()
+	RETURN 0
+END
