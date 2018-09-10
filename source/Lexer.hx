@@ -11,6 +11,8 @@ enum Token
 	Fun_call(name:String, args:Array<Token>);
 	Var_def(name:String, value:Token);
 	Var_mod(name:String, modifier:String, value:Token);
+	Cond(value:Token);
+	Comp(value:Token, op:String, valueb:Token);
 	Number(value:Int);
 	Ident(value:String);
 	Returning(value:Token);
@@ -33,43 +35,57 @@ class Lexer
 			return Fun_def(regex.matched(1), regex.matched(2).split(",").map(StringTools.trim));
 		}
 		
+		//Condition
+		regex = ~/IF\s*(.+)\s*DO/;
+		if (regex.match(chaine))
+		{
+			return Cond(to_token(regex.matched(1)));
+		}
+		
+		//Comparaison
+		regex = ~/(.+)\s*(==|!=|>=|>|<=|<)\s*(.+)/;
+		if (regex.match(chaine))
+		{
+			return Comp(to_token(regex.matched(1)), regex.matched(2), to_token(regex.matched(3)));
+		}
+		
 		//Variable definition
-		var regex = ~/([A-Z_]+)\s*=\s*(.+)/;
+		regex = ~/([A-Z_]+)\s*=\s*(.+)/;
 		if (regex.match(chaine))
 		{
 			return Var_def(regex.matched(1), to_token(regex.matched(2)));
 		}
 		
 		//Variable modification
-		var regex = ~/([A-Z_]+)\s*(\+|\-|\*|\/|%)=\s*(.+)/;
+		regex = ~/([A-Z_]+)\s*(\+|\-|\*|\/|%)=\s*(.+)/;
 		if (regex.match(chaine))
 		{
 			return Var_mod(regex.matched(1), regex.matched(2), to_token(regex.matched(3)));
 		}
 		
 		//Return a value
-		var regex = ~/RETURN(.+)/;
+		regex = ~/RETURN(.+)/;
 		if (regex.match(chaine))
 		{
 			return Returning(to_token(regex.matched(1)));
 		}
 		
 		//Define a number
-		var regex = ~/([0-9]+)/;
+		regex = ~/([0-9]+)/;
 		if (regex.match(chaine))
 		{
 			return Number(Std.parseInt(regex.matched(1)));
 		}
 		
 		//End keyword
-		var regex = ~/END/;
+		regex = ~/END/;
 		if (regex.match(chaine))
 		{
 			return End_block;
 		}
 		
 		//Function call
-		var regex = ~/([A-Z_]+)\((.*)\)/i;
+		regex = ~/([A-Z_]+)\((.*)\)/i;
 		if (regex.match(chaine))
 		{
 			var temp = regex.matched(2).trim();
@@ -85,7 +101,7 @@ class Lexer
 		}
 		
 		//Define a identifier
-		var regex = ~/([A-Z_]+)/;
+		regex = ~/([A-Z_]+)/;
 		if (regex.match(chaine))
 		{
 			return Ident(regex.matched(1));

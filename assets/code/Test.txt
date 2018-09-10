@@ -5,5 +5,8 @@ FUNCTION INIT() DO
 	X+=13
 	CALL()
 	Z=CALL()
+	IF X == 25 DO
+		Z=42
+	END
 	RETURN 0
 END
