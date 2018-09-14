@@ -17,6 +17,7 @@ enum Token
 	Ident(value:String);
 	Returning(value:Token);
 	End_block;
+	End_if;
 	Undef;
 }
  
@@ -63,27 +64,6 @@ class Lexer
 			return Var_mod(regex.matched(1), regex.matched(2), to_token(regex.matched(3)));
 		}
 		
-		//Return a value
-		regex = ~/RETURN(.+)/;
-		if (regex.match(chaine))
-		{
-			return Returning(to_token(regex.matched(1)));
-		}
-		
-		//Define a number
-		regex = ~/([0-9]+)/;
-		if (regex.match(chaine))
-		{
-			return Number(Std.parseInt(regex.matched(1)));
-		}
-		
-		//End keyword
-		regex = ~/END/;
-		if (regex.match(chaine))
-		{
-			return End_block;
-		}
-		
 		//Function call
 		regex = ~/([A-Z_]+)\((.*)\)/i;
 		if (regex.match(chaine))
@@ -100,7 +80,35 @@ class Lexer
 			
 		}
 		
-		//Define a identifier
+		//Return a value
+		regex = ~/RETURN(.+)/;
+		if (regex.match(chaine))
+		{
+			return Returning(to_token(regex.matched(1)));
+		}
+		
+		//Define a number
+		regex = ~/([0-9]+)/;
+		if (regex.match(chaine))
+		{
+			return Number(Std.parseInt(regex.matched(1)));
+		}
+		
+		//End keyword
+		regex = ~/ENDFUN/;
+		if (regex.match(chaine))
+		{
+			return End_block;
+		}
+		
+		//End keyword
+		regex = ~/ENDIF/;
+		if (regex.match(chaine))
+		{
+			return End_if;
+		}
+		
+		//Define an identifier
 		regex = ~/([A-Z_]+)/;
 		if (regex.match(chaine))
 		{
@@ -116,7 +124,7 @@ class Lexer
 	
 	public function lex()
 	{
-		var result = code.split("\n").map(StringTools.trim).map(to_token);
+		var result = code.split("\n").map(StringTools.trim).map(to_token).filter(function(x){return x != Undef; });
 		for (i in result)
 		{
 			trace(i);
