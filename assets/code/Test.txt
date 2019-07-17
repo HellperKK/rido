@@ -1,23 +1,13 @@
-FUNCTION INIT() DO
-	X=0
-	Y=12
-ENDFUN
+(def x 0)
+(def y 0)
 
-FUNCTION UPDATE() DO
-	IF BTN(0) DO
-		Y -= 1
-	ENDIF
-	IF BTN(1) DO
-		Y += 1
-	ENDIF
-	IF BTN(2) DO
-		X -= 1
-	ENDIF
-	IF BTN(3) DO
-		X += 1
-	ENDIF
-ENDFUN
+(def (init) (do 
+	(set! x 0)
+	(set! y 12)
+	))
+	
+(def (update model) model)
 
-FUNCTION DRAW() DO
-	RECTFILL(X,Y,16,16)
-ENDFUN 
+(def (draw model) (do
+	(recfill x y 16 16)
+	))
