@@ -7,114 +7,101 @@ using StringTools;
  */
 enum Token 
 {
-	Fun_def(name:String, args:Array<String>);
-	Fun_call(name:String, args:Array<Token>);
-	Var_def(name:String, value:Token);
-	Var_mod(name:String, modifier:String, value:Token);
-	Cond(value:Token);
-	Comp(value:Token, op:String, valueb:Token);
-	Number(value:Int);
-	Ident(value:String);
-	Returning(value:Token);
-	End_block;
-	End_if;
-	Undef;
+	Integ(val:Int);
+	Decimal(val:Float);
+	Boolean(val:Bool);
+	Str(val:String);
+	Identifier(val:String);
+	OpenParen;
+	ClosePar;
+	OpenBracket;
+	CloseBracket;
+	
 }
  
 class Lexer 
 {
 	private var code:String;
 	
-	static private function to_token(chaine:String):Token
-	{
-		chaine = chaine.trim();
-		
-		// Function definition
-		var regex = ~/FUNCTION\s*([A-Z_]+)\(([A-Z_, ]*)\)\s*DO/;
-		if (regex.match(chaine))
+	static private function to_token(chaine:String, acc:Array<Token>):Array<Token>
+	{		
+		if (chaine == "") 
 		{
-			return Fun_def(regex.matched(1), regex.matched(2).split(",").map(StringTools.trim));
+			return acc;
 		}
 		
-		//Condition
-		regex = ~/IF\s*(.+)\s*DO/;
+		// Blank
+		var regex = ~/^\s+/;
 		if (regex.match(chaine))
 		{
-			return Cond(to_token(regex.matched(1)));
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//Comparaison
-		regex = ~/(.+)\s*(==|!=|>=|>|<=|<)\s*(.+)/;
+		// Integer
+		var regex = ~/^([0-9]+)/;
 		if (regex.match(chaine))
 		{
-			return Comp(to_token(regex.matched(1)), regex.matched(2), to_token(regex.matched(3)));
+			var token = Integ(Std.parseInt(regex.matched(1)));
+			acc.push(token);
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//Variable definition
-		regex = ~/([A-Z_]+)\s*=\s*(.+)/;
+		// Float
+		var regex = ~/^([0-9]*.[0-9]+)/;
 		if (regex.match(chaine))
 		{
-			return Var_def(regex.matched(1), to_token(regex.matched(2)));
+			var token = Decimal(Std.parseFloat(regex.matched(1)));
+			acc.push(token);
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//Variable modification
-		regex = ~/([A-Z_]+)\s*(\+|\-|\*|\/|%)=\s*(.+)/;
+		
+		// Identifier
+		var regex = ~/^([A-Za-z][A-Za-z0-9!]*)/;
 		if (regex.match(chaine))
 		{
-			return Var_mod(regex.matched(1), regex.matched(2), to_token(regex.matched(3)));
+			var token = Identifier(regex.matched(1));
+			acc.push(token);
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//Function call
-		regex = ~/([A-Z_]+)\((.*)\)/i;
+		// Open parenthesis
+		var regex = ~/^\(/;
 		if (regex.match(chaine))
 		{
-			var temp = regex.matched(2).trim();
-			if (temp == "")
-			{
-				return Fun_call(regex.matched(1), []);
-			}
-			else
-			{
-				return Fun_call(regex.matched(1), regex.matched(2).split(",").map(to_token));
-			}
-			
+			var token = OpenParen;
+			acc.push(token);
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//Return a value
-		regex = ~/RETURN(.+)/;
+		// Close parenthesis
+		var regex = ~/^\)/;
 		if (regex.match(chaine))
 		{
-			return Returning(to_token(regex.matched(1)));
+			var token = ClosePar;
+			acc.push(token);
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//Define a number
-		regex = ~/([0-9]+)/;
+		// Open bracket
+		var regex = ~/^\[/;
 		if (regex.match(chaine))
 		{
-			return Number(Std.parseInt(regex.matched(1)));
+			var token = OpenBracket;
+			acc.push(token);
+			return to_token(regex.matchedLeft(), acc);
 		}
 		
-		//End keyword
-		regex = ~/ENDFUN/;
+		// Open parenthesis
+		var regex = ~/^\]/;
 		if (regex.match(chaine))
 		{
-			return End_block;
+			var token = CloseBracket;
+			acc.push(token);
+			return to_token(regex.matchedRight(), acc);
 		}
 		
-		//End keyword
-		regex = ~/ENDIF/;
-		if (regex.match(chaine))
-		{
-			return End_if;
-		}
-		
-		//Define an identifier
-		regex = ~/([A-Z_]+)/;
-		if (regex.match(chaine))
-		{
-			return Ident(regex.matched(1));
-		}
-		return Undef;
+		throw "uknown text";
 	}
 
 	public function new(code) 
@@ -124,12 +111,15 @@ class Lexer
 	
 	public function lex()
 	{
-		var result = code.split("\n").map(StringTools.trim).map(to_token).filter(function(x){return x != Undef; });
+		//trace(code);
+		var result = to_token(code, []);
+		//var result = code.split("\n").map(StringTools.trim).map(to_token).filter(function(x){return x != Undef; });
 		for (i in result)
 		{
 			trace(i);
 		}
 		
+		trace(result);
 		return result;
 	}
 }
